@@ -1,3 +1,4 @@
 # AiCore_Airbnb
 
-This is the read me file
+Building a framework that systematically trains, tunes, and evaluates models on several tasks that are tackled by the Airbnb team
+
