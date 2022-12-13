@@ -1,6 +1,10 @@
 import pandas as pd
+import hyperparams_config_file as hp
 import numpy as np
 import itertools
+import joblib
+import json
+import os
 from tabular_data import load_airbnb
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn.linear_model import SGDRegressor
@@ -17,12 +21,6 @@ def regression_scoring(X, y, model):
     MAE = mean_absolute_error(y, y_pred)
     R2 = r2_score(y, y_pred)
     return RMSE, MAE, R2
-
-sgd_param = {'loss': ['squared_error', 'huber', 'epsilon_insensitive','squared_epsilon_insensitive'],
-             'penalty' : ['l2', 'l1', 'elasticnet'],
-             'alpha': [1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1, 10, 100],
-             'max_iter' : [750, 1000, 1250, 1500],
-             'learning_rate': ['constant', 'optimal', 'invscaling', 'adaptive']}
 
 def custom_tune_regression_model_hyperparameters(model_type, data_sets, grid_dict):
     keys, values = zip(*grid_dict.items())
@@ -49,8 +47,26 @@ def custom_tune_regression_model_hyperparameters(model_type, data_sets, grid_dic
 
 def tune_regression_model_hyperparameters(model_type, data_sets, grid_dict):
     model = model_type()
-    pass
-    
+    params = [grid_dict]
+    gs_reg = GridSearchCV(estimator=model, param_grid=params)
+    gs_reg.fit(data_sets[0], data_sets[1])
+    best_iteration_hyperparams = gs_reg.best_params_
+    RMSE, MAE, R2 = regression_scoring(data_sets[4], data_sets[5], gs_reg)
+    return RMSE, MAE, R2, best_iteration_hyperparams, gs_reg
+
+def save_model(model, params, metrics, folder):
+    try:
+        os.mkdir(folder)
+        model_filename = folder + 'model.joblib'
+        hyperparams_filename = folder + 'hyperparameters.json'
+        metrics_filename = folder + 'metrics.json'
+        joblib.dump(model, model_filename)
+        with open(hyperparams_filename, 'w') as file:
+            json.dump(params, file)
+        with open(metrics_filename, 'w') as file:    
+            json.dump(metrics, file)    
+    except FileExistsError as E:
+        print(E)
 
 if __name__ == "__main__":
     df_listing = pd.read_csv('airbnb-property-listings/tabular_data/clean_tabular_data.csv')
@@ -60,8 +76,11 @@ if __name__ == "__main__":
     X_train, y_train, X_test, y_test, X_val, y_val = split_data(X, y)
     data_sets = [X_train, y_train, X_test, y_test, X_val, y_val]
     reg = SGDRegressor
-    RMSE, MAE, R2, best_iterations_hyperparams, best_model = custom_tune_regression_model_hyperparameters(reg, data_sets, sgd_param)
-    print(f"Best model: {best_model} \nBest Hyperparameters: {best_iterations_hyperparams} \nRMSE = {RMSE} \nMAE = {MAE} \nR2 = {R2}")
-    
+    # RMSE, MAE, R2, best_iteration_hyperparams, best_model = custom_tune_regression_model_hyperparameters(reg, data_sets, hp.sgd_params)
+    # print(f"Best model: {best_model} \nBest Hyperparameters: {best_iteration_hyperparams} \nRMSE = {RMSE} \nMAE = {MAE} \nR2 = {R2}")
+    RMSE, MAE, R2, best_iteration_hyperparams, gs_reg = custom_tune_regression_model_hyperparameters(reg, data_sets, hp.sgd_params)
+    print(f"Best model: {gs_reg} \nBest Hyperparameters: {best_iteration_hyperparams} \nRMSE = {RMSE} \nMAE = {MAE} \nR2 = {R2}")
+    regression_metrics = {"RMSE": RMSE, "MAE": MAE, "R2": R2}
+    save_model(gs_reg, best_iteration_hyperparams, regression_metrics, "models/regression/linear_regression/")
     
     
