@@ -2,6 +2,7 @@ import pandas as pd
 import hyperparams_config_file as hp
 import numpy as np
 import itertools
+import glob
 import joblib
 import json
 import os
@@ -51,11 +52,26 @@ def save_model(model, params, metrics, folder):
             json.dump(params, file)
         with open(metrics_filename, 'w') as file:    
             json.dump(metrics, file)    
-    except FileExistsError as E:
+    except FileExistsError as E: #Will this skip saving the new model if I run the training again and try to save the new model? How to get around this?
         print(E)
 
 def find_best_model():
-    pass
+    metrics_files = glob.glob("./models/regression/grid_search/*/metrics.json", recursive=True)    
+    best_score = 0
+    for file in metrics_files:
+        f = open(str(file))
+        dic_metrics = json.load(f)
+        score = dic_metrics['R2']
+        if score > best_score:
+            best_score = score
+            best_name = str(file).split('/')[-2]
+    path = f'./models/regression/grid_search/{best_name}/'
+    model = joblib.load(path + 'model.joblib')
+    with open (path + 'hyperparameters.json', 'r') as fp:
+        param = json.load(fp)
+    with open (path + 'metrics.json', 'r') as fp:
+        metrics = json.load(fp)
+    return model, param, metrics
 
 if __name__ == "__main__":
     df_listing = pd.read_csv('airbnb-property-listings/tabular_data/clean_tabular_data.csv')
@@ -69,7 +85,9 @@ if __name__ == "__main__":
                          GradientBoostingRegressor: hp.GradientBoostingRegressor_gs,
                          RandomForestRegressor: hp.RandomForestRegressor_gs}
     evaluate_all_models(models_and_params, data_sets)
-    
+    model, param, metrics = find_best_model()
+    print ('best regression model is: ', model)
+    print('with metrics', metrics)
     
 
 # def custom_tune_regression_model_hyperparameters(model_type, data_sets, grid_dict):
