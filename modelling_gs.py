@@ -21,7 +21,7 @@ def evaluate_all_models(models_and_params, data_sets):
     for model in models_and_params.items():
         RMSE, MAE, R2, best_iteration_hyperparams, gs_reg = tune_regression_model_hyperparameters(model[0], data_sets, model[1])
         regression_metrics = {"RMSE": RMSE, "MAE": MAE, "R2": R2}
-        path = f"models/regression/{model[0].__name__}/"
+        path = f"models/regression/grid_search/{model[0].__name__}/"
         save_model(gs_reg, best_iteration_hyperparams, regression_metrics, path )
 
 def regression_scoring(X, y, model):
@@ -34,7 +34,7 @@ def regression_scoring(X, y, model):
 def tune_regression_model_hyperparameters(model_type, data_sets, grid_dict):
     model = model_type()
     params = [grid_dict]
-    gs_reg = GridSearchCV(estimator=model, param_grid=params)
+    gs_reg = GridSearchCV(estimator=model, param_grid=params, verbose=10)
     gs_reg.fit(data_sets[0], data_sets[1])
     best_iteration_hyperparams = gs_reg.best_params_
     RMSE, MAE, R2 = regression_scoring(data_sets[4], data_sets[5], gs_reg)
@@ -54,6 +54,9 @@ def save_model(model, params, metrics, folder):
     except FileExistsError as E:
         print(E)
 
+def find_best_model():
+    pass
+
 if __name__ == "__main__":
     df_listing = pd.read_csv('airbnb-property-listings/tabular_data/clean_tabular_data.csv')
     np.random.seed(1)
@@ -61,17 +64,12 @@ if __name__ == "__main__":
     X = X.select_dtypes(include="number")
     X_train, y_train, X_test, y_test, X_val, y_val = split_data(X, y)
     data_sets = [X_train, y_train, X_test, y_test, X_val, y_val]
-    models_and_params = {SGDRegressor: hp.SGDRegressor, 
-                         DecisionTreeRegressor: hp.DecisionTreeRegressor, 
-                         RandomForestRegressor: hp.RandomForestRegressor, 
-                         GradientBoostingRegressor: hp.GradientBoostingRegressor}
+    models_and_params = {SGDRegressor: hp.SGDRegressor_gs, 
+                         DecisionTreeRegressor: hp.DecisionTreeRegressor_gs, 
+                         GradientBoostingRegressor: hp.GradientBoostingRegressor_gs,
+                         RandomForestRegressor: hp.RandomForestRegressor_gs}
     evaluate_all_models(models_and_params, data_sets)
     
-    # RMSE, MAE, R2, best_iteration_hyperparams, best_model = custom_tune_regression_model_hyperparameters(reg, data_sets, hp.sgd_params)
-    # print(f"Best model: {best_model} \nBest Hyperparameters: {best_iteration_hyperparams} \nRMSE = {RMSE} \nMAE = {MAE} \nR2 = {R2}")
-    # print(f"Best model: {gs_reg} \nBest Hyperparameters: {best_iteration_hyperparams} \nRMSE = {RMSE} \nMAE = {MAE} \nR2 = {R2}")
-    # regression_metrics = {"RMSE": RMSE, "MAE": MAE, "R2": R2}
-    # save_model(gs_reg, best_iteration_hyperparams, regression_metrics, "models/regression/linear_regression/")
     
 
 # def custom_tune_regression_model_hyperparameters(model_type, data_sets, grid_dict):
