@@ -13,6 +13,8 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn.metrics import accuracy_score, precision_score, f1_score, recall_score
 from sklearn.linear_model import SGDRegressor, LogisticRegression
 from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.preprocessing import OneHotEncoder, LabelEncoder
+
 
 def split_data(X, y):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1)
@@ -57,10 +59,9 @@ def tune_regression_model_hyperparameters(model_type, data_sets, grid_dict):
     RMSE, MAE, R2 = regression_scoring(data_sets[4], data_sets[5], gs_reg)
     return RMSE, MAE, R2, best_iteration_hyperparams, gs_reg
 
-def tune_classification_model_hyperparameters(model_type, data_sets, grid_dict):
+def tune_classification_model_hyperparameters(model_type, data_sets, grid):
     model = model_type()
-    params = [grid_dict]
-    gs_classification = GridSearchCV(estimator=model, param_grid=params, verbose=10, error_score='raise') #Should I define a scoring parameter here?
+    gs_classification = GridSearchCV(estimator=model, param_grid=grid, verbose=10, error_score='raise') #Should I define a scoring parameter here?
     gs_classification.fit(data_sets[0], data_sets[1])
     best_iteration_hyperparams = gs_classification.best_params_
     accuracy, precision, f1, recall = classification_scoring(data_sets[4], data_sets[5], gs_classification)
@@ -119,6 +120,12 @@ if __name__ == "__main__":
 
 #Classification
     X, y = load_airbnb(df_listing, "Category")
+    enc = OneHotEncoder()
+    columns = ["ID", "Title", "Description", "Amenities", "Location", "url"]
+    X = enc.fit_transform(X[columns])
+    le = LabelEncoder()
+    y = le.fit_transform(y)
+    # X = enc.fit_transform(X) #transfrms original data not just fit it
     X_train, y_train, X_test, y_test, X_val, y_val = split_data(X, y)
     data_sets = [X_train, y_train, X_test, y_test, X_val, y_val]
     models_and_params = {LogisticRegression: hp.LogisticRegression_gs}

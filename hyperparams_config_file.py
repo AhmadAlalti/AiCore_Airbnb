@@ -53,6 +53,6 @@ GradientBoostingRegressor_gs = {'n_estimators': [500, 1000, 2000],
                          'subsample': [.75, 1, 1.25],
                          'random_state': [1]}
 
-LogisticRegression_gs = {'penalty': ['l1', 'l2', 'elasticnet', 'None'],
-                         'C': [100, 10, 1.0, 0.1, 0.01],
-                         'solver': ['newton-cg', 'lbfgs', 'sag', 'saga']}
+LogisticRegression_gs = [
+    {'penalty': ['l2', None], 'C': [100, 10, 1.0, 0.1, 0.01], 'solver': ['newton-cg', 'lbfgs', 'sag']},
+    {'penalty': ['l1', 'l2', 'elasticnet', None], 'C': [100, 10, 1.0, 0.1, 0.01], 'solver': ['saga']}]
