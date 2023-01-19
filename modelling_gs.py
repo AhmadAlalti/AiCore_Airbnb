@@ -10,7 +10,8 @@ from tabular_data import load_airbnb
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-from sklearn.linear_model import SGDRegressor
+from sklearn.metrics import accuracy_score, precision_score, f1_score, recall_score
+from sklearn.linear_model import SGDRegressor, LogisticRegression
 from sklearn.model_selection import train_test_split, GridSearchCV
 
 def split_data(X, y):
@@ -18,12 +19,19 @@ def split_data(X, y):
     X_test, X_val, y_test, y_val = train_test_split(X_test, y_test, test_size=0.5, random_state=1) #Is the test size correct? original 30%, split into two 15%
     return X_train, y_train, X_test, y_test, X_val, y_val
 
-def evaluate_all_models(models_and_params, data_sets):
+def evaluate_regression_models(models_and_params, data_sets):
     for model in models_and_params.items():
         RMSE, MAE, R2, best_iteration_hyperparams, gs_reg = tune_regression_model_hyperparameters(model[0], data_sets, model[1])
         regression_metrics = {"RMSE": RMSE, "MAE": MAE, "R2": R2}
         path = f"models/regression/grid_search/{model[0].__name__}/"
         save_model(gs_reg, best_iteration_hyperparams, regression_metrics, path )
+
+def evaluate_classification_models(models_and_params, data_sets):
+    for model in models_and_params.items():
+        accuracy, precision, f1, recall, best_iteration_hyperparams, gs_classification = tune_classification_model_hyperparameters(model[0], data_sets, model[1])
+        classification_metrics = {"Accuracy": accuracy, "Precision": precision, "f1": f1, "Recall": recall}
+        path = f"models/classification/grid_search/{model[0].__name__}/"
+        save_model(gs_classification, best_iteration_hyperparams, classification_metrics, path)
 
 def regression_scoring(X, y, model):
     y_pred = model.predict(X)
@@ -31,6 +39,14 @@ def regression_scoring(X, y, model):
     MAE = mean_absolute_error(y, y_pred)
     R2 = r2_score(y, y_pred)
     return RMSE, MAE, R2
+
+def classification_scoring(X, y, model):
+    y_pred = model.predict(X)
+    accuracy = accuracy_score(y, y_pred)
+    precision = precision_score(y, y_pred)
+    f1 = f1_score(y, y_pred)
+    recall = recall_score(y, y_pred)
+    return accuracy, precision, f1, recall
 
 def tune_regression_model_hyperparameters(model_type, data_sets, grid_dict):
     model = model_type()
@@ -40,6 +56,15 @@ def tune_regression_model_hyperparameters(model_type, data_sets, grid_dict):
     best_iteration_hyperparams = gs_reg.best_params_
     RMSE, MAE, R2 = regression_scoring(data_sets[4], data_sets[5], gs_reg)
     return RMSE, MAE, R2, best_iteration_hyperparams, gs_reg
+
+def tune_classification_model_hyperparameters(model_type, data_sets, grid_dict):
+    model = model_type()
+    params = [grid_dict]
+    gs_classification = GridSearchCV(estimator=model, param_grid=params, verbose=10, error_score='raise') #Should I define a scoring parameter here?
+    gs_classification.fit(data_sets[0], data_sets[1])
+    best_iteration_hyperparams = gs_classification.best_params_
+    accuracy, precision, f1, recall = classification_scoring(data_sets[4], data_sets[5], gs_classification)
+    return accuracy, precision, f1, recall, best_iteration_hyperparams, gs_classification
 
 def save_model(model, params, metrics, folder):
     try:
@@ -55,7 +80,7 @@ def save_model(model, params, metrics, folder):
     except FileExistsError as E: #Will this skip saving the new model if I run the training again and try to save the new model? How to get around this?
         print(E)
 
-def find_best_model():
+def find_best_regression_model():
     metrics_files = glob.glob("./models/regression/grid_search/*/metrics.json", recursive=True)    
     best_score = 0
     for file in metrics_files:
@@ -76,18 +101,30 @@ def find_best_model():
 if __name__ == "__main__":
     df_listing = pd.read_csv('airbnb-property-listings/tabular_data/clean_tabular_data.csv')
     np.random.seed(1)
-    X, y = load_airbnb(df_listing, "Price_Night")
-    X = X.select_dtypes(include="number")
+    
+    
+#Regression:
+#     X, y = load_airbnb(df_listing, "Price_Night") 
+#     X = X.select_dtypes(include="number")
+#     X_train, y_train, X_test, y_test, X_val, y_val = split_data(X, y)
+#     data_sets = [X_train, y_train, X_test, y_test, X_val, y_val]
+#     models_and_params = {SGDRegressor: hp.SGDRegressor_gs, 
+#                          DecisionTreeRegressor: hp.DecisionTreeRegressor_gs, 
+#                          GradientBoostingRegressor: hp.GradientBoostingRegressor_gs,
+#                          RandomForestRegressor: hp.RandomForestRegressor_gs}
+#     evaluate_regression_models(models_and_params, data_sets)
+#     model, param, metrics = find_best_regression_model()
+#     print ('best regression model is: ', model)
+#     print('with metrics', metrics)
+
+#Classification
+    X, y = load_airbnb(df_listing, "Category")
     X_train, y_train, X_test, y_test, X_val, y_val = split_data(X, y)
     data_sets = [X_train, y_train, X_test, y_test, X_val, y_val]
-    models_and_params = {SGDRegressor: hp.SGDRegressor_gs, 
-                         DecisionTreeRegressor: hp.DecisionTreeRegressor_gs, 
-                         GradientBoostingRegressor: hp.GradientBoostingRegressor_gs,
-                         RandomForestRegressor: hp.RandomForestRegressor_gs}
-    evaluate_all_models(models_and_params, data_sets)
-    model, param, metrics = find_best_model()
-    print ('best regression model is: ', model)
-    print('with metrics', metrics)
+    models_and_params = {LogisticRegression: hp.LogisticRegression_gs}
+    evaluate_classification_models(models_and_params, data_sets)
+#   model, param, metrics = find_best_classification_model()    
+
     
 
 # def custom_tune_regression_model_hyperparameters(model_type, data_sets, grid_dict):
