@@ -1,0 +1,1 @@
+{"splitter": "random", "min_weight_fraction_leaf": 0.1, "min_samples_leaf": 6, "max_leaf_nodes": 70, "max_features": null, "max_depth": 3}
