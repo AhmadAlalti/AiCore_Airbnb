@@ -50,7 +50,7 @@ GradientBoostingRegressor_rs = {'n_estimators': [500, 1000, 2000],
 GradientBoostingRegressor_gs = {'n_estimators': [500, 1000, 2000],
                          'learning_rate': [.001, 0.01, .1],
                          'max_depth': [1, 2, 4],
-                         'subsample': [.75, 1, 1.25],
+                         'subsample': [.75, 1],
                          'random_state': [1]}
 
 LogisticRegression_gs = [    

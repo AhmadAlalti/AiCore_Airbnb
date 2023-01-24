@@ -20,7 +20,7 @@ from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 
 def split_data(X, y):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1)
-    X_test, X_val, y_test, y_val = train_test_split(X_test, y_test, test_size=0.5, random_state=1) #Is the test size correct? original 30%, split into two 15%
+    X_test, X_val, y_test, y_val = train_test_split(X_test, y_test, test_size=0.5, random_state=1)
     return X_train, y_train, X_test, y_test, X_val, y_val
 
 def evaluate_regression_models(models_and_params, data_sets):
@@ -47,9 +47,9 @@ def regression_scoring(X, y, model):
 def classification_scoring(X, y, model):
     y_pred = model.predict(X)
     accuracy = accuracy_score(y, y_pred)
-    precision = precision_score(y, y_pred, average="micro")
-    f1 = f1_score(y, y_pred, average="micro")
-    recall = recall_score(y, y_pred, average="micro")
+    precision = precision_score(y, y_pred, average="macro") #Is my averaging correct?
+    f1 = f1_score(y, y_pred, average="macro")
+    recall = recall_score(y, y_pred, average="macro")
     return accuracy, precision, f1, recall
 
 def tune_regression_model_hyperparameters(model_type, data_sets, grid_dict):
@@ -64,7 +64,7 @@ def tune_regression_model_hyperparameters(model_type, data_sets, grid_dict):
 
 def tune_classification_model_hyperparameters(model_type, data_sets, grid):
     model = model_type()
-    gs_classification = GridSearchCV(estimator=model, param_grid=grid, verbose=10, error_score='raise', refit=True) #Should I define a scoring parameter here?
+    gs_classification = GridSearchCV(estimator=model, param_grid=grid, verbose=10, error_score='raise', refit=True)
     gs_classification.fit(data_sets[0], data_sets[1])
     estimator = gs_classification.best_estimator_
     best_iteration_hyperparams = gs_classification.best_params_
@@ -72,8 +72,7 @@ def tune_classification_model_hyperparameters(model_type, data_sets, grid):
     return accuracy, precision, f1, recall, best_iteration_hyperparams, estimator
 
 def save_model(model, params, metrics, folder):
-    try:
-        os.mkdir(folder)
+        os.makedirs(folder, exist_ok=True)
         model_filename = folder + 'model.joblib'
         hyperparams_filename = folder + 'hyperparameters.json'
         metrics_filename = folder + 'metrics.json'
@@ -81,9 +80,7 @@ def save_model(model, params, metrics, folder):
         with open(hyperparams_filename, 'w') as file:
             json.dump(params, file)
         with open(metrics_filename, 'w') as file:    
-            json.dump(metrics, file)    
-    except FileExistsError as E: #Will this skip saving the new model if I run the training again and try to save the new model? How to get around this?
-        print(E)
+            json.dump(metrics, file)
 
 def find_best_regression_model():
     metrics_files = glob.glob("./models/regression/grid_search/*/metrics.json", recursive=True)    
@@ -109,7 +106,8 @@ if __name__ == "__main__":
     
     
 #Regression:
-    # X, y = load_airbnb(df_listing, "Price_Night") 
+    # X, y = load_airbnb(df_listing, "Price_Night")
+    # X.drop('Unnamed: 0', axis=1, inplace=True) 
     # X = X.select_dtypes(include="number")
     # X_train, y_train, X_test, y_test, X_val, y_val = split_data(X, y)
     # data_sets = [X_train, y_train, X_test, y_test, X_val, y_val]
@@ -124,9 +122,8 @@ if __name__ == "__main__":
 
 #Classification
     X, y = load_airbnb(df_listing, "Category")
-    enc = OneHotEncoder()
-    columns = ["ID", "Title", "Description", "Amenities", "Location", "url"]
-    X = enc.fit_transform(X[columns])
+    X = X.select_dtypes(include=["int64", "float64"])
+    X.drop('Unnamed: 0', axis=1, inplace=True) 
     le = LabelEncoder()
     y = le.fit_transform(y)
     X_train, y_train, X_test, y_test, X_val, y_val = split_data(X, y)
@@ -140,7 +137,7 @@ if __name__ == "__main__":
     result = loaded_model.fit(X_train, y_train)
     y_pred = result.predict(X_val)
     confusion_matrix_1 = confusion_matrix(y_val, y_pred)
-    cm_display = ConfusionMatrixDisplay(confusion_matrix = confusion_matrix_1, display_labels = [False, True])
+    cm_display = ConfusionMatrixDisplay(confusion_matrix = confusion_matrix_1)
     cm_display.plot()
     plt.show()
 

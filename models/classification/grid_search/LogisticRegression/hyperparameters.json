@@ -1,1 +1,1 @@
-{"C": 100, "l1_ratio": 0.8, "penalty": "elasticnet", "solver": "saga"}
+{"C": 1.0, "penalty": "l2", "solver": "newton-cg"}
