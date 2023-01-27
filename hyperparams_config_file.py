@@ -57,3 +57,19 @@ LogisticRegression_gs = [
     {'penalty': ['l2', None], 'C': [100, 10, 1.0, 0.1, 0.01], 'solver': ['newton-cg', 'lbfgs', 'sag']},
     {'penalty': ['l1', 'l2', None], 'C': [100, 10, 1.0, 0.1, 0.01], 'solver': ['saga']},
     {'penalty': ['elasticnet'], 'C': [100, 10, 1.0, 0.1, 0.01], 'solver': ['saga'], 'l1_ratio': [0, 0.1, 0.3, 0.6, 0.8, 1]}]
+
+DecisionTreeClassifier_gs = [{'criterion': ['gini', 'entropy'],
+                              "splitter": ["best","random"],
+                              'max_depth': [1, 3, 5, 7, 9, 10, 30, 50, 70, None],
+                              'min_samples_split': range(1, 10),
+                              'min_samples_leaf': range(1,5)}]
+
+RandomForestClassifier_gs = [{'criterion': ['gini', 'entropy', 'log_loss'],
+                              'max_depth': [1, 3, 5, 7, 9, 10, 30, 50, 70, None],
+                              'min_samples_split': range(1, 10),
+                              'min_samples_leaf': range(1,5)}]
+
+GradientBoostingClassifier_gs = [{'loss': ['log_loss'],
+                                  'learning_rate': [.001, 0.01, .1],
+                                  'n_estimators': [100, 500, 1000, 2000],
+                                  'subsample': [.5, .75, 1]}]

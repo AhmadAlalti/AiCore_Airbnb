@@ -1,0 +1,1 @@
+{"learning_rate": 0.001, "loss": "log_loss", "n_estimators": 2000, "subsample": 0.5}

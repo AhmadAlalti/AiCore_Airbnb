@@ -8,8 +8,8 @@ import joblib
 import json
 import os
 from tabular_data import load_airbnb
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, RandomForestClassifier, GradientBoostingClassifier
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn.metrics import accuracy_score, precision_score, f1_score, recall_score
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
@@ -82,18 +82,31 @@ def save_model(model, params, metrics, folder):
         with open(metrics_filename, 'w') as file:    
             json.dump(metrics, file)
 
-def find_best_regression_model():
-    metrics_files = glob.glob("./models/regression/grid_search/*/metrics.json", recursive=True)    
-    best_score = 0
-    for file in metrics_files:
-        f = open(str(file))
-        dic_metrics = json.load(f)
-        score = dic_metrics['R2']
-        if score > best_score:
-            best_score = score
-            best_name = str(file).split('/')[-2]
-    path = f'./models/regression/grid_search/{best_name}/'
-    model = joblib.load(path + 'model.joblib')
+def find_best_model(reg_or_class):
+    if reg_or_class == "regression":
+        metrics_files = glob.glob("./models/regression/grid_search/*/metrics.json", recursive=True)
+        best_score = 0
+        for file in metrics_files:
+            f = open(str(file))
+            dic_metrics = json.load(f)
+            score = dic_metrics['R2']
+            if score > best_score:
+                best_score = score
+                best_name = str(file).split('/')[-2]
+        path = f'./models/regression/grid_search/{best_name}/'
+        model = joblib.load(path + 'model.joblib')
+    elif reg_or_class == "classification":
+        metrics_files = glob.glob("./models/classification/grid_search/*/metrics.json", recursive=True)    
+        best_score = 0
+        for file in metrics_files:
+            f = open(str(file))
+            dic_metrics = json.load(f)
+            score = dic_metrics['f1']
+            if score > best_score:
+                best_score = score
+                best_name = str(file).split('/')[-2]
+        path = f'./models/classification/grid_search/{best_name}/'
+        model = joblib.load(path + 'model.joblib')
     with open (path + 'hyperparameters.json', 'r') as fp:
         param = json.load(fp)
     with open (path + 'metrics.json', 'r') as fp:
@@ -116,7 +129,7 @@ if __name__ == "__main__":
     #                      GradientBoostingRegressor: hp.GradientBoostingRegressor_gs,
     #                      RandomForestRegressor: hp.RandomForestRegressor_gs}
     # evaluate_regression_models(models_and_params, data_sets)
-    # model, param, metrics = find_best_regression_model()
+    # model, param, metrics = find_best_model("regression")
     # print ('best regression model is: ', model)
     # print('with metrics', metrics)
 
@@ -127,19 +140,24 @@ if __name__ == "__main__":
     le = LabelEncoder()
     y = le.fit_transform(y)
     X_train, y_train, X_test, y_test, X_val, y_val = split_data(X, y)
-    # data_sets = [X_train, y_train, X_test, y_test, X_val, y_val]
-    # models_and_params = {LogisticRegression: hp.LogisticRegression_gs}
-    # evaluate_classification_models(models_and_params, data_sets)
-#   model, param, metrics = find_best_classification_model()    
+    data_sets = [X_train, y_train, X_test, y_test, X_val, y_val]
+    models_and_params = {#LogisticRegression: hp.LogisticRegression_gs,
+                         #DecisionTreeClassifier: hp.DecisionTreeClassifier_gs,
+                         #RandomForestClassifier: hp.RandomForestClassifier_gs,
+                         GradientBoostingClassifier: hp.GradientBoostingClassifier_gs}
+    evaluate_classification_models(models_and_params, data_sets)
+    model, param, metrics = find_best_model("classification")
+    print ('best classification model is: ', model)
+    print('with metrics', metrics)    
 
 #Confusion Matrix for Logisic regression model
-    loaded_model = joblib.load('models/classification/grid_search/LogisticRegression/model.joblib')
-    result = loaded_model.fit(X_train, y_train)
-    y_pred = result.predict(X_val)
-    confusion_matrix_1 = confusion_matrix(y_val, y_pred)
-    cm_display = ConfusionMatrixDisplay(confusion_matrix = confusion_matrix_1)
-    cm_display.plot()
-    plt.show()
+    # loaded_model = joblib.load('models/classification/grid_search/LogisticRegression/model.joblib')
+    # result = loaded_model.fit(X_train, y_train)
+    # y_pred = result.predict(X_val)
+    # confusion_matrix_1 = confusion_matrix(y_val, y_pred)
+    # cm_display = ConfusionMatrixDisplay(confusion_matrix = confusion_matrix_1)
+    # cm_display.plot()
+    # plt.show()
 
 
 
