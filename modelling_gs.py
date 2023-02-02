@@ -119,31 +119,29 @@ if __name__ == "__main__":
     
     
 #Regression:
-    # X, y = load_airbnb(df_listing, "Price_Night")
-    # X.drop('Unnamed: 0', axis=1, inplace=True) 
-    # X = X.select_dtypes(include="number")
-    # X_train, y_train, X_test, y_test, X_val, y_val = split_data(X, y)
-    # data_sets = [X_train, y_train, X_test, y_test, X_val, y_val]
-    # models_and_params = {SGDRegressor: hp.SGDRegressor_gs, 
-    #                      DecisionTreeRegressor: hp.DecisionTreeRegressor_gs, 
-    #                      GradientBoostingRegressor: hp.GradientBoostingRegressor_gs,
-    #                      RandomForestRegressor: hp.RandomForestRegressor_gs}
-    # evaluate_regression_models(models_and_params, data_sets)
-    # model, param, metrics = find_best_model("regression")
-    # print ('best regression model is: ', model)
-    # print('with metrics', metrics)
+    X, y = load_airbnb(df_listing, "Price_Night")
+    X = X.select_dtypes(include=["int64", "float64"])
+    X_train, y_train, X_test, y_test, X_val, y_val = split_data(X, y)
+    data_sets = [X_train, y_train, X_test, y_test, X_val, y_val]
+    models_and_params = {SGDRegressor: hp.SGDRegressor_gs, 
+                         DecisionTreeRegressor: hp.DecisionTreeRegressor_gs, 
+                         GradientBoostingRegressor: hp.GradientBoostingRegressor_gs,
+                         RandomForestRegressor: hp.RandomForestRegressor_gs}
+    evaluate_regression_models(models_and_params, data_sets)
+    model, param, metrics = find_best_model("regression")
+    print ('best regression model is: ', model)
+    print('with metrics', metrics)
 
 #Classification
     X, y = load_airbnb(df_listing, "Category")
     X = X.select_dtypes(include=["int64", "float64"])
-    X.drop('Unnamed: 0', axis=1, inplace=True) 
     le = LabelEncoder()
     y = le.fit_transform(y)
     X_train, y_train, X_test, y_test, X_val, y_val = split_data(X, y)
     data_sets = [X_train, y_train, X_test, y_test, X_val, y_val]
-    models_and_params = {#LogisticRegression: hp.LogisticRegression_gs,
-                         #DecisionTreeClassifier: hp.DecisionTreeClassifier_gs,
-                         #RandomForestClassifier: hp.RandomForestClassifier_gs,
+    models_and_params = {LogisticRegression: hp.LogisticRegression_gs,
+                         DecisionTreeClassifier: hp.DecisionTreeClassifier_gs,
+                         RandomForestClassifier: hp.RandomForestClassifier_gs,
                          GradientBoostingClassifier: hp.GradientBoostingClassifier_gs}
     evaluate_classification_models(models_and_params, data_sets)
     model, param, metrics = find_best_model("classification")
