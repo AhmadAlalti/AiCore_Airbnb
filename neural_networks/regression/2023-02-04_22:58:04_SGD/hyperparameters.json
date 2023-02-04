@@ -1,0 +1,1 @@
+{"lr": 0.0001, "momentum": 0.1, "dampening": 0, "weight_decay": 0.5, "nesterov": false, "maximize": false, "foreach": null, "differentiable": false, "params": [0, 1]}

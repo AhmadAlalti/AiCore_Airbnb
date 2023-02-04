@@ -1,0 +1,1 @@
+{"lr": 0.0001, "lr_decay": 0, "eps": 1e-10, "weight_decay": 1, "initial_accumulator_value": 0, "foreach": null, "maximize": false, "params": [0, 1]}

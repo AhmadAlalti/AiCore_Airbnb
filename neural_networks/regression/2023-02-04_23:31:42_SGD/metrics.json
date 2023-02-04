@@ -1,0 +1,1 @@
+{"RMSE_Loss_Train": 40.208133697509766, "R2_Score_Train": -8.566237449645996, "RMSE_Loss_Validation": 40.479679107666016, "R2_Score_Val": -12.54218578338623, "training_duration_seconds": 3.025135040283203, "inference_latency_seconds": 0.00036287466684977213}

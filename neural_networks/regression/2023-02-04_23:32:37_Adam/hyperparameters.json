@@ -1,0 +1,1 @@
+{"lr": 0.0001, "betas": [0.9, 0.999], "eps": 1e-08, "weight_decay": 0.5, "amsgrad": true, "maximize": false, "foreach": null, "capturable": false, "differentiable": false, "fused": false, "params": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]}
