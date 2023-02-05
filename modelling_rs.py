@@ -1,9 +1,11 @@
-import hyperparams_config_file as hp
-import pandas as pd
-import numpy as np
+#This code was used to narrow down the grid search parameters in modelling_gs.py
+
 import joblib
 import json
 import os
+import hyperparams_config_file as hp
+import pandas as pd
+import numpy as np
 from tabular_data import load_airbnb
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn.model_selection import train_test_split, RandomizedSearchCV
