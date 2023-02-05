@@ -455,13 +455,13 @@ def find_best_nn(yaml_file, model, dataset, folder):
     model.
     '''
     
-    # optimisers = get_optimiser(yaml_file, model)
+    optimisers = get_optimiser(yaml_file, model)
     
-    # for optimiser in optimisers:
-    #     performance_metrics = get_nn_scoring(model, dataset, optimiser)
-    #     sd = optimiser.state_dict()
-    #     optimiser_params = sd['param_groups'][0]
-    #     save_model(model, folder, optimiser, performance_metrics, optimiser_params)
+    for optimiser in optimisers:
+        performance_metrics = get_nn_scoring(model, dataset, optimiser)
+        sd = optimiser.state_dict()
+        optimiser_params = sd['param_groups'][0]
+        save_model(model, folder, optimiser, performance_metrics, optimiser_params)
     
     metrics_files = glob.glob("./neural_networks/regression/*/metrics.json", recursive=True)
     best_score = 0
