@@ -508,7 +508,10 @@ def print_model_info(best_name, metrics, params):
     print('-' * 80)
     print('Parameters')
     for key, value in params.items():
-        print(key, ' : ', value)    
+        if key == 'params':
+            pass
+        else:
+            print(key, ' : ', value)    
     print('-' * 80)
         
     
